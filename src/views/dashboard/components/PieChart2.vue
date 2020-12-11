@@ -27,7 +27,7 @@
     },
 
     mounted () {
-      console.log('---', this.$refs.vePie)
+      // console.log('---', this.$refs.vePie)
     }
   }
 </script>
