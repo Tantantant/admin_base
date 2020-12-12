@@ -37,7 +37,7 @@ export default {
     */
     delTrademarkList(id) {
         return request({
-            url: `${api_name}/remove${id}`,
+            url: `${api_name}/remove/${id}`,
             method: 'DELETE',
         })
     }

@@ -1,10 +1,6 @@
 <template>
   <div>
-    <el-button
-      type="primary"
-      class="el-icon-plus"
-      @click="dialogVisible = true"
-    >
+    <el-button type="primary" class="el-icon-plus" @click="add">
       添加</el-button
     >
     <el-table
@@ -23,18 +19,18 @@
         </template>
       </el-table-column>
       <el-table-column prop="address" label="操作">
-        <template>
+        <template v-slot="scope">
           <el-button
             size="mini"
             type="warning"
-            @click="handleEdit()"
             class="el-icon-edit"
+            @click="update(scope.row)"
             >修改</el-button
           >
           <el-button
             size="mini"
             type="danger"
-            @click="handleDelete"
+            @click="handleDelete(scope.row)"
             class="el-icon-delete"
             >删除</el-button
           >
@@ -55,7 +51,11 @@
     </el-pagination>
 
     <!-- 添加数据  对话框-->
-    <el-dialog title="添加品牌" :visible.sync="dialogVisible" width="50%">
+    <el-dialog
+      :title="`${!ruleForm.id ? '添加品牌' : '修改品牌'}`"
+      :visible.sync="dialogVisible"
+      width="50%"
+    >
       <!-- :before-close="handleClose" -->
       <el-form
         :model="ruleForm"
@@ -69,7 +69,7 @@
           <el-input v-model="ruleForm.tmName" style="width: 450px"></el-input>
         </el-form-item>
         <!-- 图片上传 -->
-        <el-form-item label="品牌LOGO" prop="logo">
+        <el-form-item label="品牌LOGO" prop="logoUrl">
           <el-upload
             class="avatar-uploader"
             :action="`${$BASE_API}/admin/product/fileUpload`"
@@ -111,7 +111,7 @@ export default {
         tmName: "",
         logoUrl: "",
       },
-        // 表单验证
+      // 表单验证
       rules: {
         tmName: [
           { required: true, message: "请输入品牌名称", trigger: "blur" },
@@ -165,27 +165,95 @@ export default {
       return imageType && isLimit;
     },
 
-    // 添加对话框确认
+    // 提交表单的方法
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const result = await this.$API.trademark.addTrademarkList(
-            this.ruleForm
-          );
-          if(result.code === 200){
-            this.dialogVisible=false
-            this.$message.success('添加数据成功')
-          }else{
-            this.$message.error('添加数据失败')
+          const { ruleForm } = this;
+          // 将拿到id强制转换成boolean值
+          const isUpdate = !!ruleForm.id;
+          // console.log(isUpdate)
+          if (isUpdate) {
+            const item = this.trademarkList.find(
+              (item) => item.id === ruleForm.id
+            );
+            // console.log(this.trademarkList.tmName)
+            // console.log(this.trademarkList.logoUrl)
+            if (
+              item.tmName === ruleForm.tmName &&
+              item.logoUrl === ruleForm.logoUrl
+            ) {
+              console.log("相同")
+              this.$message.warning("不能修改相同的数据");
+              return;
+            }
+          }
+          let result;
+          if (isUpdate) {
+            result = await this.$API.trademark.updateTrademarkList(ruleForm);
+            console.log("修改")
+
+          } else {
+            result = await this.$API.trademark.addTrademarkList(ruleForm);
+            console.log('添加')
+          }
+          // console.log(result)
+          if (result.code === 200) {
+            // const result = await this.$API.trademark.addTrademarkList(
+            //   this.ruleForm
+            // );
+            this.dialogVisible = false;
+            this.$message.success(`${isUpdate?'修改':'添加'}数据成功`);
+          } else {
+            this.$message.error("添加数据失败");
           }
         }
       });
     },
-
+    // 添加
+    add() {
+      this.dialogVisible = true;
+      this.ruleForm = {
+        tmName: "",
+        logoUrl: "",
+      };
+      // 清空错误提示
+      this.$refs.ruleForm && this.$refs.ruleForm.clearValidate();
+    },
     // 删除
-    handleDelete(e){
-      console.log(e)
-    }
+    handleDelete(value) {
+      const { id } = value;
+
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          this.trademarkList = this.trademarkList.filter((item) => {
+            item.id === id;
+          });
+          await this.$API.trademark.delTrademarkList(id);
+          await this.getTrademarkList(this.page, this.limit);
+          this.$message({
+            type: "success",
+            message: "删除成功!",
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+    // 修改
+    update(row) {
+      this.dialogVisible = true;
+      this.ruleForm = { ...row };
+      // 清空错误提示
+      this.$refs.ruleForm && this.$refs.ruleForm.clearValidate();
+    },
   },
   mounted() {
     this.getTrademarkList(this.page, this.limit);
