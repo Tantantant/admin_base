@@ -7,6 +7,7 @@
             v-model="category.category1Id"
             @change="handleSelectChange1"
             placeholder="请选择"
+            :disabled="disabled"
           >
             <el-option
               v-for="c1 in category1List"
@@ -17,11 +18,12 @@
             </el-option>
           </el-select>
         </el-form-item>
-        
+        <el-form-item label="二级分类">
           <el-select
             v-model="category.category2Id"
             @change="handleSelectChange2"
             placeholder="请选择"
+            :disabled="disabled"
           >
             <el-option
               v-for="c2 in category2List"
@@ -37,6 +39,7 @@
             v-model="category.category3Id"
             @change="handleSelectChange3"
             placeholder="请选择"
+            :disabled="disabled"
           >
             <el-option
               v-for="c3 in category3List"
@@ -55,6 +58,7 @@
 <script>
 export default {
   name: "Catetory",
+  props: ['disabled'],
   data() {
     return {
       category: {
@@ -93,15 +97,9 @@ export default {
     async handleSelectChange3(category3Id) {
       const category = {
         ...this.category,
-        category3Id
+        category3Id,
       };
-      const result = await this.$API.attrs.getAttrList(category)
-      // console.log(result.data)
-      if(result.code === 200){
-        this.$emit('change',result.data)
-      }else{
-        this.$message.error(result.message)
-      }
+      this.$emit("change", category);
     },
   },
   async mounted() {
