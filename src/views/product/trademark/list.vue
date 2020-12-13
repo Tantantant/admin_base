@@ -4,6 +4,7 @@
       添加</el-button
     >
     <el-table
+      v-loading="loading"
       :data="trademarkList"
       border
       style="width: 100%"
@@ -107,6 +108,7 @@ export default {
       limit: 3,
       page: 1,
       dialogVisible: false, // 添加数据弹出框
+      loading: false, // 加载
       ruleForm: {
         tmName: "",
         logoUrl: "",
@@ -128,6 +130,7 @@ export default {
     //   this.getTrademarkList(this.page,limit)
     // }, // currentPage 改变时会触发	当前页
     async getTrademarkList(page, limit) {
+      this.loading = true
       const result = await this.$API.trademark.getTrademarkList(page, limit);
       if (result.code === 200) {
         this.$message.success("获取品牌列表成功");
@@ -135,6 +138,7 @@ export default {
         this.page = result.data.current; // 当前页码
         this.trademarkList = result.data.records;
         this.total = result.data.total; // 总数
+        this.loading = false
       } else {
         this.$message.error("获取品牌列表失败");
       }
@@ -183,7 +187,7 @@ export default {
               item.tmName === ruleForm.tmName &&
               item.logoUrl === ruleForm.logoUrl
             ) {
-              console.log("相同")
+              console.log("相同");
               this.$message.warning("不能修改相同的数据");
               return;
             }
@@ -191,11 +195,10 @@ export default {
           let result;
           if (isUpdate) {
             result = await this.$API.trademark.updateTrademarkList(ruleForm);
-            console.log("修改")
-
+            console.log("修改");
           } else {
             result = await this.$API.trademark.addTrademarkList(ruleForm);
-            console.log('添加')
+            console.log("添加");
           }
           // console.log(result)
           if (result.code === 200) {
@@ -203,7 +206,7 @@ export default {
             //   this.ruleForm
             // );
             this.dialogVisible = false;
-            this.$message.success(`${isUpdate?'修改':'添加'}数据成功`);
+            this.$message.success(`${isUpdate ? "修改" : "添加"}数据成功`);
           } else {
             this.$message.error("添加数据失败");
           }
@@ -230,11 +233,13 @@ export default {
         type: "warning",
       })
         .then(async () => {
+          this.loading = true;
           this.trademarkList = this.trademarkList.filter((item) => {
             item.id === id;
           });
           await this.$API.trademark.delTrademarkList(id);
           await this.getTrademarkList(this.page, this.limit);
+          this.loading = false;
           this.$message({
             type: "success",
             message: "删除成功!",
