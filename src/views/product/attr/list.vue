@@ -5,7 +5,6 @@
       <el-button
         type="primary"
         class="el-icon-plus"
-        :disabled="!catetory.category3Id"
         @click="addattrs"
       >
         添加属性</el-button

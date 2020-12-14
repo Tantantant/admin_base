@@ -2,9 +2,8 @@
   <div>
     <Category />
     <el-card class="box-card" style="margin: 20px 0">
-      <SpuShowList v-if="isShowList"/>
-      <SpuUpdataList v-else/>
-      <!--  -->
+      <SpuShowList v-if="isShowList" @showUpdateList="showUpdateList" />
+      <SpuUpdataList v-else :item="item"/>
     </el-card>
   </div>
 </template>
@@ -17,8 +16,15 @@ export default {
   name: "SpuList",
   data() {
     return {
-      isShowList:true
+      isShowList: true,
+      item: {},
     };
+  },
+  methods: {
+    showUpdateList(row) {
+      this.isShowList = false;
+      this.item = { ...row };
+    },
   },
   components: {
     Category,

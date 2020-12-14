@@ -1,15 +1,20 @@
 <template>
   <div>
-    <el-button type="primary" class="el-icon-plus"> 添加属性</el-button>
+    <el-button type="primary" class="el-icon-plus"> 添加SPU</el-button>
     <el-table v-loading="loading" border :data="spuList" style="width: 100%">
       <el-table-column align="center" type="index" label="序号" width="80">
       </el-table-column>
       <el-table-column prop="spuName" label="SPU名称"> </el-table-column>
       <el-table-column label="SPU描述" prop="description"></el-table-column>
       <el-table-column prop="address" label="操作">
-        <template>
+        <template v-slot="{row}">
           <el-button type="primary" icon="el-icon-plus" size="mini"></el-button>
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
+            size="mini"
+            @click="$emit('showUpdateList', row)"
+          ></el-button>
           <el-button type="info" icon="el-icon-info" size="mini"></el-button>
           <el-button
             type="danger"
@@ -37,7 +42,7 @@
 
 <script>
 export default {
-  name: "spuShowList",
+  name: "SpuShowList",
   data() {
     return {
       spuList: [],
