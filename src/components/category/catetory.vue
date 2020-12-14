@@ -58,7 +58,7 @@
 <script>
 export default {
   name: "Catetory",
-  props: ['disabled'],
+  props: ["disabled"],
   data() {
     return {
       category: {
@@ -83,6 +83,7 @@ export default {
       } else {
         this.$message.error(result.message);
       }
+      this.$bus.$emit("clearList");
     },
     async handleSelectChange2(category2Id) {
       this.category3List = [];
@@ -93,13 +94,15 @@ export default {
       } else {
         this.$message.error(result.message);
       }
+      this.$bus.$emit("clearList");
     },
     async handleSelectChange3(category3Id) {
       const category = {
         ...this.category,
         category3Id,
       };
-      this.$emit("change", category);
+      this.$bus.$emit("change", category);
+      this.$bus.$emit("clearList");
     },
   },
   async mounted() {

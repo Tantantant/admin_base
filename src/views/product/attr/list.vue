@@ -1,8 +1,15 @@
 <template>
   <div>
-    <Catetory @change="getAttrList" :disabled="!isShowAttr" />
+    <Catetory :disabled="!isShowAttr" />
     <el-card class="box-card" style="margin: 20px 0" v-show="isShowAttr">
-      <el-button type="primary" class="el-icon-plus"> 添加属性</el-button>
+      <el-button
+        type="primary"
+        class="el-icon-plus"
+        :disabled="!catetory.category3Id"
+        @click="addattrs"
+      >
+        添加属性</el-button
+      >
       <el-table border :data="attrList" style="width: 100%">
         <el-table-column align="center" type="index" label="序号" width="80">
         </el-table-column>
@@ -45,8 +52,13 @@
         </el-form-item>
       </el-form>
 
-      <el-button type="primary" class="el-icon-plus" @click="addAttrValue">
-        添加属性</el-button
+      <el-button
+        type="primary"
+        class="el-icon-plus"
+        @click="addAttrValue"
+        :disabled="!attr.attrName"
+      >
+        添加属性值</el-button
       >
       <el-table
         border
@@ -94,30 +106,11 @@
       <el-button type="primary" @click="saveAttr">保存</el-button>
       <el-button @click="cancel">取消</el-button>
     </el-card>
-
-    <!-- 添加 -->
-    <!-- <el-card class="box-card" style="margin: 20px 0" v-show="!isShowAttr">
-      <el-form inline>
-        <el-form-item label="属性名ddd" prop="attrName">
-          <el-input></el-input>
-        </el-form-item>
-      </el-form>
-
-      <el-button type="primary" class="el-icon-plus" >
-        添加</el-button
-      >
-      <el-table border style="width: 100%" class="attrList_table">
-        <el-table-column align="center" type="index" label="序号" width="80">
-        </el-table-column>
-        <el-table-column label="属性值名称"> </el-table-column>
-        <el-table-column label="操作"> </el-table-column>
-      </el-table>
-    </el-card> -->
   </div>
 </template>
 
 <script>
-import Catetory from "./catetory";
+import Catetory from "../../../components/category/catetory";
 export default {
   name: "AttrList",
   data() {
@@ -127,14 +120,23 @@ export default {
       attr: {
         attrName: "",
         attrValueList: [],
-        edit: true,
+      },
+      catetory: {
+        // 代表三个分类的id数据
+        category1Id: "",
+        category2Id: "",
+        category3Id: "",
       },
     };
   },
   methods: {
+    // 清空数据
+    clearList() {
+      this.attrList = [];
+      this.catetory.category3Id = "";
+    },
     // 删除属性
     async delAttrName(row) {
-      console.log(row.id);
       this.attrList.splice(row.id, 1);
       const result = await this.$API.attrs.deleteAttr(row.id);
 
@@ -146,10 +148,13 @@ export default {
       }
     },
     // 添加属性
-    // addattrs() {
-    //   console.log(111)
-    //   this.isShowAttr = false;
-    // },
+    addattrs() {
+      // console.log(111)
+      this.isShowAttr = false;
+      this.attr.attrName = "";
+      this.attr.attrValueList = [];
+      this.attr.id = "";
+    },
     // 取消
     cancel() {
       this.isShowAttr = true;
@@ -168,10 +173,17 @@ export default {
     },
     // 保存
     async saveAttr() {
-      const result = await this.$API.attrs.saveAttrInfo(this.attr);
+      const isAdd = !this.attr.id;
+      const data = this.attr;
+      if (isAdd) {
+        data.categoryId = this.catetory.category3Id;
+        data.categoryLevel = 3;
+      }
+      const result = await this.$API.attrs.saveAttrInfo(data);
+      // console.log(result)
       if (result.code === 200) {
         this.$message.success("更新数据成功");
-        this.$API.attrs.saveAttrInfo(this.attr);
+        // this.$API.attrs.saveAttrInfo(data);
         this.isShowAttr = true;
         this.getAttrList(this.catetory);
       } else {
@@ -210,7 +222,15 @@ export default {
       }
     },
   },
-
+  mounted() {
+    // @change="getAttrList"
+    this.$bus.$on("change", this.getAttrList);
+    this.$bus.$on("clearList", this.clearList);
+  },
+  beforeDestroy() {
+    this.$bus.$off("change", this.getAttrList);
+    this.$bus.$off("clearList", this.clearList);
+  },
   components: {
     Catetory,
   },

@@ -270,10 +270,7 @@ export default {
   margin: 20px 0
 .trademark-img
   width: 100px
-.pagination
-  text-align: right
-.pagination .el-pagination__jump
-  margin-right: 350px
+
 
 .avatar-uploader .el-upload
   border: 1px dashed #d9d9d9
