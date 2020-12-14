@@ -30,6 +30,7 @@
               type="danger"
               icon="el-icon-delete"
               size="mini"
+              @click="delAttrName(row)"
             ></el-button>
           </template>
         </el-table-column>
@@ -131,6 +132,19 @@ export default {
     };
   },
   methods: {
+    // 删除属性
+    async delAttrName(row) {
+      console.log(row.id);
+      this.attrList.splice(row.id, 1);
+      const result = await this.$API.attrs.deleteAttr(row.id);
+
+      this.getAttrList(this.catetory);
+      if (result.code === 200) {
+        this.$message.success("删除成功");
+      } else {
+        this.$message.error("删除失败");
+      }
+    },
     // 添加属性
     // addattrs() {
     //   console.log(111)
@@ -170,7 +184,6 @@ export default {
       this.$nextTick(() => {
         this.$refs.input.focus();
       });
-        this.isShowAttr = true
     },
     // 获取焦点
     edit(row) {
