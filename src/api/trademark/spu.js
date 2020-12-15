@@ -33,7 +33,7 @@ export default {
         });
     },
 
-    // 添加SPU
+    // 保存SPU
     addSpu(spu) {
         return request({
             url: `${api_name}/saveSpuInfo`,

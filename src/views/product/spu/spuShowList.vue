@@ -7,7 +7,7 @@
       <el-table-column prop="spuName" label="SPU名称"> </el-table-column>
       <el-table-column label="SPU描述" prop="description"></el-table-column>
       <el-table-column prop="address" label="操作">
-        <template v-slot="{row}">
+        <template v-slot="{ row, $index }">
           <el-button type="primary" icon="el-icon-plus" size="mini"></el-button>
           <el-button
             type="primary"
@@ -20,6 +20,7 @@
             type="danger"
             icon="el-icon-delete"
             size="mini"
+            @click="delSpu(row, $index)"
           ></el-button>
         </template>
       </el-table-column>
@@ -58,6 +59,16 @@ export default {
     };
   },
   methods: {
+    // 删除SPU
+    async delSpu(row, index) {
+      console.log(row);
+      const { id } = row;
+      if (confirm("Are You Sure?")) {
+        const result = await this.$API.spu.delSpu(id);
+         console.log(result)
+        this.spuList.splice(index, 1);
+      }
+    },
     //   分页器
     async getTrademarkList(page, limit) {
       this.loading = true;
@@ -67,7 +78,6 @@ export default {
         this.trademarkList = result.data.records;
         this.total = result.data.total; // 总数
         this.getShowList(page, limit);
-        this.loading = false;
       } else {
         this.$message.error("获取品牌列表失败");
       }

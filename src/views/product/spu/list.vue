@@ -3,7 +3,7 @@
     <Category />
     <el-card class="box-card" style="margin: 20px 0">
       <SpuShowList v-if="isShowList" @showUpdateList="showUpdateList" />
-      <SpuUpdataList v-else :item="item"/>
+      <SpuUpdataList v-else :item="item" @showList="showList"/>
     </el-card>
   </div>
 </template>
@@ -25,6 +25,13 @@ export default {
       this.isShowList = false;
       this.item = { ...row };
     },
+    showList(category3Id){
+      console.log(category3Id)
+      this.isShowList = true
+      this.$nextTick(()=>{
+        this.$bus.$emit('change',{category3Id})
+      })
+    }
   },
   components: {
     Category,
