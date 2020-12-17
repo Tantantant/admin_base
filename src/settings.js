@@ -6,7 +6,7 @@ module.exports = {
   /* 
   主界面左侧Logo标题
   */
-  title: '谷粒商城后台lalala',
+  title: '全国三亿人都在被骗的购物APP',
 
   /* 
   是否固定主界面的Header部分

@@ -38,7 +38,7 @@ import {
 
   // Autocomplete,
   // MenuItemGroup,
-  // InputNumber,
+  InputNumber,
   // Radio,
   RadioGroup,
   RadioButton,
@@ -126,7 +126,7 @@ Vue.use(Loading.directive);
 
 // Vue.use(Autocomplete);
 // Vue.use(MenuItemGroup);
-// Vue.use(InputNumber);
+Vue.use(InputNumber);
 // Vue.use(Radio);
 Vue.use(RadioGroup);
 Vue.use(RadioButton);

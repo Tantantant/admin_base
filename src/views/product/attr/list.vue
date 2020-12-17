@@ -1,33 +1,44 @@
 <template>
   <div>
-    <Catetory :disabled="!isShowAttr" />
-    <el-card class="box-card" style="margin: 20px 0" v-show="isShowAttr">
+    <!-- 自定义事件 -->
+    <!-- <Category
+      @change="getAttrList"
+      @clearList="clearList"
+      :disabled="!isShowList"
+    /> -->
+
+    <!-- 全局事件总线事件 -->
+    <Category :disabled="!isShowList" />
+
+    <el-card v-show="isShowList" style="margin-top: 20px">
       <el-button
         type="primary"
-        class="el-icon-plus"
-        @click="addattrs"
+        icon="el-icon-plus"
+        :disabled="!category.category3Id"
+        @click="add"
+        >添加属性</el-button
       >
-        添加属性</el-button
-      >
-      <el-table border :data="attrList" style="width: 100%">
-        <el-table-column align="center" type="index" label="序号" width="80">
+
+      <el-table :data="attrList" border style="width: 100%; margin: 20px 0">
+        <el-table-column type="index" label="序号" width="80" align="center">
         </el-table-column>
         <el-table-column prop="attrName" label="属性名称" width="150">
         </el-table-column>
+
         <el-table-column label="属性值列表">
           <template v-slot="{ row }">
             <el-tag
-              type="info"
-              v-for="valueList in row.attrValueList"
-              :key="valueList.id"
-              >{{ valueList.valueName }}</el-tag
+              style="margin-right: 5px"
+              v-for="attrVal in row.attrValueList"
+              :key="attrVal.id"
+              >{{ attrVal.valueName }}</el-tag
             >
           </template>
         </el-table-column>
-        <el-table-column prop="address" label="操作" width="150">
+        <el-table-column label="操作" width="150">
           <template v-slot="{ row }">
             <el-button
-              type="primary"
+              type="warning"
               icon="el-icon-edit"
               size="mini"
               @click="update(row)"
@@ -36,15 +47,13 @@
               type="danger"
               icon="el-icon-delete"
               size="mini"
-              @click="delAttrName(row)"
             ></el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 修改 -->
-    <el-card class="box-card" style="margin: 20px 0" v-show="!isShowAttr">
+    <el-card v-show="!isShowList" style="margin-top: 20px">
       <el-form :model="attr" inline>
         <el-form-item label="属性名" prop="attrName">
           <el-input v-model="attr.attrName"></el-input>
@@ -53,75 +62,94 @@
 
       <el-button
         type="primary"
-        class="el-icon-plus"
-        @click="addAttrValue"
         :disabled="!attr.attrName"
+        icon="el-icon-plus"
+        @click="addAttrValue"
+        >添加属性值</el-button
       >
-        添加属性值</el-button
-      >
+
       <el-table
-        border
         :data="attr.attrValueList"
-        style="width: 100%"
-        class="attrList_table"
+        border
+        style="width: 100%; margin: 20px 0"
       >
-        <el-table-column align="center" type="index" label="序号" width="80">
+        <el-table-column type="index" label="序号" width="80" align="center">
         </el-table-column>
         <el-table-column label="属性值名称">
           <template v-slot="{ row, $index }">
+            <!--
+              事件修饰符：
+                .native
+                专门给组件绑定事件使用的
+                会给组件中的第一个标签绑定相应的原生DOM事件
+             -->
             <el-input
               v-if="row.edit"
+              v-model="row.valueName"
               @blur="editCompleted(row, $index)"
               @keyup.enter.native="editCompleted(row, $index)"
-              v-model="row.valueName"
               autofocus
               ref="input"
               size="mini"
             ></el-input>
+            <!-- 直接给对象添加新属性不是响应式数据, 通过this.$set添加的属性才是响应式 -->
             <span
               v-else
               @click="edit(row)"
-              style="width: 100%; display: block"
+              style="display: block; width: 100%"
               >{{ row.valueName }}</span
             >
           </template>
         </el-table-column>
         <el-table-column label="操作">
           <template v-slot="{ row, $index }">
+            <!-- 文档有问题：onConfirm -->
             <el-popconfirm
-              :title="`确定删除${row.valueName}吗？`"
-              @onConfirm="delAttr($index)"
-            >
-              <el-button
+              @onConfirm="delAttrValue($index)"
+              :title="`确定删除 ${row.valueName} 吗？`"
+              ><el-button
                 type="danger"
                 icon="el-icon-delete"
                 size="mini"
                 slot="reference"
-              ></el-button>
-            </el-popconfirm>
+              ></el-button
+            ></el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
-      <el-button type="primary" @click="saveAttr">保存</el-button>
-      <el-button @click="cancel">取消</el-button>
+
+      <el-button type="primary" @click="save">保存</el-button>
+      <el-button @click="isShowList = true">取消</el-button>
     </el-card>
   </div>
 </template>
 
 <script>
-import Catetory from "../../../components/category/catetory";
+import Category from "@/components/Category";
+
+/*
+categoryId:61
+categoryLevel:3
+id:3467
+attrName:"屏幕尺寸"
+attrValueList:Array[3]
+  attrId:3467
+  id:18904
+  valueName:"5.0~5.49英寸"
+*/
+
 export default {
   name: "AttrList",
   data() {
     return {
       attrList: [],
-      isShowAttr: true,
+      isShowList: true,
       attr: {
         attrName: "",
         attrValueList: [],
       },
-      catetory: {
-        // 代表三个分类的id数据
+      category: {
+        // 代表三个分类id数据
         category1Id: "",
         category2Id: "",
         category3Id: "",
@@ -129,92 +157,84 @@ export default {
     };
   },
   methods: {
-    // 清空数据
     clearList() {
+      console.log(1);
+      // 清空数据
       this.attrList = [];
-      this.catetory.category3Id = "";
+      // 禁用按钮
+      this.category.category3Id = "";
     },
-    // 删除属性
-    async delAttrName(row) {
-      this.attrList.splice(row.id, 1);
-      const result = await this.$API.attrs.deleteAttr(row.id);
-
-      this.getAttrList(this.catetory);
-      if (result.code === 200) {
-        this.$message.success("删除成功");
-      } else {
-        this.$message.error("删除失败");
-      }
-    },
-    // 添加属性
-    addattrs() {
-      // console.log(111)
-      this.isShowAttr = false;
+    // 显示添加属性列表
+    add() {
+      this.isShowList = false;
       this.attr.attrName = "";
       this.attr.attrValueList = [];
-      this.attr.id = "";
-    },
-    // 取消
-    cancel() {
-      this.isShowAttr = true;
     },
     editCompleted(row, index) {
       if (!row.valueName) {
         this.attr.attrValueList.splice(index, 1);
-        // this.$message.warning("请输入属性值名称");
         return;
       }
       row.edit = false;
     },
-    // 删除
-    delAttr(index) {
-      this.attr.attrValueList.splice(index, 1);
-    },
     // 保存
-    async saveAttr() {
+    async save() {
+      // 判断是否是添加
       const isAdd = !this.attr.id;
+
       const data = this.attr;
+
       if (isAdd) {
-        data.categoryId = this.catetory.category3Id;
+        // this.attr里面只有attrName和attrValueList
+        // 还需要categoryId和categoryLevel
+        data.categoryId = this.category.category3Id;
         data.categoryLevel = 3;
       }
+
+      // 修改
       const result = await this.$API.attrs.saveAttrInfo(data);
-      // console.log(result)
+
       if (result.code === 200) {
-        this.$message.success("更新数据成功");
-        // this.$API.attrs.saveAttrInfo(data);
-        this.isShowAttr = true;
-        this.getAttrList(this.catetory);
+        this.$message.success("更新属性成功~");
+        this.isShowList = true;
+        this.getAttrList(this.category);
       } else {
         this.$message.error(result.message);
       }
     },
-    // 添加属性值
+    delAttrValue(index) {
+      console.log(index);
+      this.attr.attrValueList.splice(index, 1);
+    },
     addAttrValue() {
       this.attr.attrValueList.push({ edit: true });
       this.$nextTick(() => {
         this.$refs.input.focus();
       });
     },
-    // 获取焦点
     edit(row) {
       this.$set(row, "edit", true);
       this.$nextTick(() => {
         this.$refs.input.focus();
       });
     },
-    // 修改属性值
     update(attr) {
-      // ...attr  防止attr发生变化时修改原数据
-      // this.attr = { ...attr };
-      // 深度克隆，防止对象中对象还存在引用关系
+      // 为了防止attr变化时直接修改原数据
+      // this.attr = {
+      //   ...attr,
+      // };
+
+      // 深度克隆：防止对象中对象还存在引用关系
       this.attr = JSON.parse(JSON.stringify(attr));
-      this.isShowAttr = false;
+
+      this.isShowList = false;
     },
-    async getAttrList(catetory) {
-      this.catetory = catetory;
-      const result = await this.$API.attrs.getAttrList(catetory);
+    async getAttrList(category) {
+      this.category = category;
+      const result = await this.$API.attrs.getAttrList(category);
       if (result.code === 200) {
+        // console.log(result.data);
+        // 子组件给父组件传递参数 自定义事件
         this.attrList = result.data;
       } else {
         this.$message.error(result.message);
@@ -222,21 +242,16 @@ export default {
     },
   },
   mounted() {
-    // @change="getAttrList"
     this.$bus.$on("change", this.getAttrList);
     this.$bus.$on("clearList", this.clearList);
   },
   beforeDestroy() {
+    // 通常情况下：清除绑定的全局事件
     this.$bus.$off("change", this.getAttrList);
     this.$bus.$off("clearList", this.clearList);
   },
   components: {
-    Catetory,
+    Category,
   },
 };
 </script>
-
-<style lang="sass" scope>
-.attrList_table
-  margin: 20px 0
-</style>
