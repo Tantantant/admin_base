@@ -140,7 +140,6 @@
 </template>
 
 <script>
-// import { trademark } from "@/api";
 
 export default {
   name: "TrademarkList",

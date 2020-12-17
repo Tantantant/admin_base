@@ -87,15 +87,14 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary">保存</el-button>
-        <el-button @click="$emit('showSpuList', spu.category3Id)"
-          >取消</el-button
-        >
+        <el-button>取消</el-button>
       </el-form-item>
     </el-form>
   </el-card>
 </template>
 
 <script>
+import {mapState} from 'vuex'
 export default {
   props: {
     spuItem: Object,
@@ -110,6 +109,11 @@ export default {
       price: 1,
       weight: 1,
     };
+  },
+    computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
   },
   methods: {
     handleSelectionChange() {},
@@ -141,11 +145,7 @@ export default {
     },
     // 获取所有平台属性列表
     async getAttrList() {
-      const result = await this.$API.attrs.getAttrList({
-        category1Id: this.spu.category1Id,
-        category2Id: this.spu.category2Id,
-        category3Id: this.spu.category3Id,
-      });
+      const result = await this.$API.attrs.getAttrList(this.category);
       if (result.code === 200) {
         this.$message.success("获取所有平台属性列表成功~");
         // 处理数据
@@ -156,7 +156,9 @@ export default {
     },
   },
   mounted() {
-    this.getSpuImageList(), this.getSpuSaleAttrList(), this.getAttrList();
+    this.getSpuImageList();
+    this.getSpuSaleAttrList();
+    this.getAttrList();
   },
 };
 </script>

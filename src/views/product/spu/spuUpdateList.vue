@@ -127,7 +127,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="save">保存</el-button>
-        <el-button @click="$emit('showList', spu.category3Id)">取消</el-button>
+        <el-button @click="$emit('showList')">取消</el-button>
       </el-form-item>
     </el-form>
 
@@ -138,6 +138,7 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
 import { category } from "@/api";
 export default {
   name: "SpuUpdateList",
@@ -164,7 +165,11 @@ export default {
       },
     };
   },
+
   computed: {
+    ...mapState({
+      category:(state)=>state.category.category
+    }),
     // 格式化图片数据
     formatImageList() {
       return this.imageList.map((img) => {
@@ -260,6 +265,7 @@ export default {
           // 收集数据
           const spu = {
             ...this.spu, // 展开数据
+            category3Id:this.category.category3Id,
             spuImageList: this.imageList,
             spuSaleAttrList: this.spuSaleAttrList,
           };
@@ -274,7 +280,7 @@ export default {
 
           if (result.code === 200) {
             // 切换回showList
-            this.$emit("showList", this.spu.category3Id);
+            this.$emit("showList");
             // this.$nextTick(() => {
             //   this.$bus.$emit("change", { category3Id: this.spu.category3Id });
             // })

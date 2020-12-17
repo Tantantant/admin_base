@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "SpuShowList",
   data() {
@@ -63,14 +64,35 @@ export default {
       page: 1,
       limit: 3,
       total: 0,
-      category: {
-        category1Id: "",
-        category2Id: "",
-        category3Id: "",
-      },
+      // category: {
+      //   category1Id: "",
+      //   category2Id: "",
+      //   category3Id: "",
+      // },
       spuList: [],
       loading: false,
     };
+  },
+  computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
+  },
+  watch: {
+    "category.category3Id": {
+      handler(category3Id) {
+        if (category3Id) return;
+        this.getPageList(this.page, this.limit);
+      },
+      // 立即触发一次
+      immediate: true,
+    },
+    "category.category1Id"() {
+      this.clearList();
+    },
+    "category.category2Id"() {
+      this.clearList();
+    },
   },
   methods: {
     // 获取SPU分页列表
@@ -94,27 +116,26 @@ export default {
       this.loading = false;
     },
     // 处理category的change（当选中三级分类时触发）
-    handleCategoryChange(category) {
-      // 触发事件，会将分类id传递过来
-      this.category = category;
-      this.getPageList(this.page, this.limit);
-    },
+    // handleCategoryChange(category) {
+    //   // 触发事件，会将分类id传递过来
+    //   this.getPageList(this.page, this.limit);
+    // },
     // 当选中1级或2级分类触发
     clearList() {
       this.spuList = [];
       this.page = 1;
       this.limit = 3;
       this.total = 0;
-      this.category.category3Id = "";
+      // this.category.category3Id = "";
     },
   },
   mounted() {
-    this.$bus.$on("change", this.handleCategoryChange);
+    // this.$bus.$on("change", this.handleCategoryChange);
     this.$bus.$on("clearList", this.clearList);
   },
   beforeDestroy() {
     // 通常情况下：清除绑定的全局事件
-    this.$bus.$off("change", this.handleCategoryChange);
+    // this.$bus.$off("change", this.handleCategoryChange);
     this.$bus.$off("clearList", this.clearList);
   },
 };

@@ -126,6 +126,7 @@
 
 <script>
 import Category from "@/components/Category";
+import { mapState } from 'vuex';
 
 /*
 categoryId:61
@@ -148,13 +149,30 @@ export default {
         attrName: "",
         attrValueList: [],
       },
-      category: {
-        // 代表三个分类id数据
-        category1Id: "",
-        category2Id: "",
-        category3Id: "",
-      },
+      // category: {
+      //   // 代表三个分类id数据
+      //   category1Id: "",
+      //   category2Id: "",
+      //   category3Id: "",
+      // },
     };
+  },
+  computed:{
+    ...mapState({
+      category:(state)=>state.category.category
+    })
+  },
+  watch:{
+    "category.category3Id"(category3Id){
+      if(!category3Id) return
+      this.getAttrList()
+    },
+    'category.category1Id'(){
+      this.clearList();
+    },
+    "category.category2Id"(){
+      this.clearList()
+    }
   },
   methods: {
     clearList() {
@@ -197,7 +215,7 @@ export default {
       if (result.code === 200) {
         this.$message.success("更新属性成功~");
         this.isShowList = true;
-        this.getAttrList(this.category);
+        this.getAttrList();
       } else {
         this.$message.error(result.message);
       }
@@ -229,9 +247,8 @@ export default {
 
       this.isShowList = false;
     },
-    async getAttrList(category) {
-      this.category = category;
-      const result = await this.$API.attrs.getAttrList(category);
+    async getAttrList() {
+      const result = await this.$API.attrs.getAttrList(this.category);
       if (result.code === 200) {
         // console.log(result.data);
         // 子组件给父组件传递参数 自定义事件
@@ -242,13 +259,13 @@ export default {
     },
   },
   mounted() {
-    this.$bus.$on("change", this.getAttrList);
-    this.$bus.$on("clearList", this.clearList);
+    // this.$bus.$on("change", this.getAttrList);
+    // this.$bus.$on("clearList", this.clearList);
   },
   beforeDestroy() {
     // 通常情况下：清除绑定的全局事件
-    this.$bus.$off("change", this.getAttrList);
-    this.$bus.$off("clearList", this.clearList);
+    // this.$bus.$off("change", this.getAttrList);
+    // this.$bus.$off("clearList", this.clearList);
   },
   components: {
     Category,

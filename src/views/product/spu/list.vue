@@ -5,7 +5,7 @@
       @clearList 当1级分类和2级分类触发的时候触发，清空列表
       :disabled 决定select是否可以使用
      -->
-    <SkuList v-if="isShowSkuList" :spuItem="spuItem"/>
+    <SkuList v-if="isShowSkuList" :spuItem="spuItem" @showSpuList="showSpuList"/>
 
     <div v-else>
       <Category :disabled="!isShowList" />
@@ -40,7 +40,6 @@ export default {
   },
   methods: {
     showSpuList(row) {
-      console.log('quxioa')
       this.isShowSkuList = true;
       this.spuItem = { ...row };
     },
@@ -51,9 +50,9 @@ export default {
     showList(category3Id) {
       this.isShowList = true;
       // 等ShowList组件加载完成，在触发事件
-      this.$nextTick(() => {
-        this.$bus.$emit("change", { category3Id });
-      });
+      // this.$nextTick(() => {
+      //   this.$bus.$emit("change",  {category3Id} );
+      // });
     },
   },
   components: {
